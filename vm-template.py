@@ -17,17 +17,18 @@
 COMPUTE_URL_BASE = 'https://www.googleapis.com/compute/v1/'
 
 
-def GenerateConfig(unused_context):
+def GenerateConfig(context):
   """Creates the first virtual machine."""
 
   resources = [{
-      'name': 'the-first-vm',
+      'name': context.properties['name'],
       'type': 'compute.v1.instance',
       'properties': {
-          'zone': 'us-central1-f',
-          'machineType': ''.join([COMPUTE_URL_BASE, 'projects/[MY_PROJECT]',
-                                  '/zones/us-central1-f/',
-                                  'machineTypes/f1-micro']),
+          'zone': context.properties['zone'],
+          'machineType': ''.join([COMPUTE_URL_BASE, 'projects/',
+                                  context.properties['project'], '/zones/',
+                                  context.properties['zone'], '/machineTypes/',
+                                  context.properties['machineType']]),
           'disks': [{
               'deviceName': 'boot',
               'type': 'PERSISTENT',
@@ -40,7 +41,7 @@ def GenerateConfig(unused_context):
               }
           }],
           'networkInterfaces': [{
-              'network': '$(ref.a-new-network.selfLink)',
+              'network': '$(ref.' + context.properties['network'] + '.selfLink)',
               'accessConfigs': [{
                   'name': 'External NAT',
                   'type': 'ONE_TO_ONE_NAT'
