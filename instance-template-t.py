@@ -16,6 +16,23 @@
 
 COMPUTE_URL_BASE = 'https://www.googleapis.com/compute/v1/'
 
+def startup_script():
+  return """
+    sudo apt-get install -y nginx
+    sudo curl -fsSL get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo docker run -d -p 8080:8080 gauravthadani/istiosample
+    sudo echo " server {
+          listen 80;
+          server_name ~^.*$;
+          location / {
+              proxy_pass http://127.0.0.1:8080/hello;
+           }
+    }" >> /etc/nginx/conf.d/myapp.conf
+    sudo systemctl restart nginx
+
+  """
+
 def GenerateConfig(context):
   """Creates the instance group template with environment variable."""
   resources = [{
@@ -36,31 +53,10 @@ def GenerateConfig(context):
                                           'images/family/debian-8'])
               }
           }],
-          'networkInterfaces': [{
-              'network': '$(ref.' + context.properties['network'] + '.selfLink)',
-              'accessConfigs': [{
-                  'name': 'External NAT',
-                  'type': 'ONE_TO_ONE_NAT'
-              }]
-          }],
           'metadata': {
               'items': [{
                   'key': 'startup-script',
-                  'value': ''.join(['#!/bin/bash\n',
-                                    'sudo apt-get update\n',
-'sudo apt-get install -y nginx\n',
-'sudo curl -fsSL get.docker.com -o get-docker.sh\n',
-'sudo sh get-docker.sh\n',
-'sudo docker run -d -p 8080:8080 gauravthadani/istiosample\n',
-'sudo echo " server {\n',
-'\n',
-        'listen 80;\n',
-        'server_name ~^.*$;\n',
-         'location / {\n',
-        'proxy_pass http://127.0.0.1:8080/hello;\n',
-        '}\n',
-'}" >> /etc/nginx/conf.d/myapp.conf\n',
-'sudo systemctl restart nginx\n'])
+                  'value': startup_script(),
               }]
           }
       }
