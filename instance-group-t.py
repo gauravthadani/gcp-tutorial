@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-imports:
-- path: vm-t.py
-- path: network-t.py
-- path: firewall-t.py
-- path: deployment-t.py
-- path: instance-template-t.py
+"""Creates the instance group template."""
 
-resources:
-- name: deployment-setup
-  type: deployment-t.py    
+COMPUTE_URL_BASE = 'https://www.googleapis.com/compute/v1/'
+
+def GenerateConfig(context):
+  """Creates the instance group template with environment variable."""
+  resources = [{
+      'name': context.env['name'],
+      'type': 'compute.v1.instanceGroupManager',
+      'description': 'this is your autoscaling group'
+  }]
+  return {'resources': resources}

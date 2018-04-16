@@ -1,0 +1,47 @@
+# Copyright 2016 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Creates the Compute Engine."""
+
+NETWORK_NAME = 'a-new-network'
+PROJECT_NAME = 'dius-gcp-dev'
+DEFAULT_ZONE = 'us-central1-c'
+
+
+def GenerateConfig(unused_context):
+  """Creates the Compute Engine with multiple templates."""
+
+  resources = [{
+      'name': 'the-first-instance-template',
+      'type': 'instance-template-t.py',
+      'properties': {
+          'project': PROJECT_NAME,
+          'machineType': 'f1-micro',
+          'zone': DEFAULT_ZONE,
+          'network': NETWORK_NAME
+      }
+  }, {
+      'name': NETWORK_NAME,
+      'type': 'network-t.py',
+      'properties': {
+          'IPv4Range': '10.0.0.1/16'
+      }
+  }, {
+      'name': NETWORK_NAME + '-firewall',
+      'type': 'firewall-t.py',
+      'properties': {
+          'network': NETWORK_NAME
+      }
+  }]
+  return {'resources': resources}
