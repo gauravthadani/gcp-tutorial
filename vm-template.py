@@ -21,7 +21,7 @@ def GenerateConfig(context):
   """Creates the first virtual machine."""
 
   resources = [{
-      'name': context.properties['name'],
+      'name': context.env['name'],
       'type': 'compute.v1.instance',
       'properties': {
           'zone': context.properties['zone'],
@@ -46,7 +46,27 @@ def GenerateConfig(context):
                   'name': 'External NAT',
                   'type': 'ONE_TO_ONE_NAT'
               }]
-          }]
+          }],
+          'metadata': {
+              'items': [{
+                  'key': 'startup-script',
+                  'value': ''.join(['#!/bin/bash\n',
+                                    'sudo apt-get update\n',
+'sudo apt-get install -y nginx\n',
+'sudo curl -fsSL get.docker.com -o get-docker.sh\n',
+'sudo sh get-docker.sh\n',
+'sudo docker run -d -p 8080:8080 gauravthadani/istiosample\n',
+'sudo echo " server {\n',
+'\n',
+        'listen 80;\n',
+        'server_name ~^.*$;\n',
+         'location / {\n',
+        'proxy_pass http://127.0.0.1:8080/hello;\n',
+        '}\n',
+'}" >> /etc/nginx/conf.d/myapp.conf\n',
+'sudo systemctl restart nginx\n'])
+              }]
+          }
       }
   }]
   return {'resources': resources}

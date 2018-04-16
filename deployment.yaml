@@ -12,17 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates the network."""
+imports:
+- path: vm-template.py
+- path: network-template.py
+- path: firewall-template.py
+- path: deployment-template.py
 
-
-def GenerateConfig(context):
-    """Creates the network resource."""
-
-    resources = [{
-        'name': context.env['name'],
-        'type': 'compute.v1.network',
-        'properties': {
-            'IPv4Range': context.properties['IPv4Range']
-        }
-    }]
-    return {'resources': resources}
+resources:
+- name: deployment-setup
+  type: deployment-template.py

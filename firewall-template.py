@@ -12,17 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Creates the network."""
+"""Creates the firewall."""
 
 
 def GenerateConfig(context):
-    """Creates the network resource."""
+  """Creates the firewall with environment variables."""
 
-    resources = [{
-        'name': context.env['name'],
-        'type': 'compute.v1.network',
-        'properties': {
-            'IPv4Range': context.properties['IPv4Range']
-        }
-    }]
-    return {'resources': resources}
+  resources = [{
+      'name': context.env['name'],
+      'type': 'compute.v1.firewall',
+      'properties': {
+          'network': '$(ref.' + context.properties['network'] + '.selfLink)',
+          'sourceRanges': ['0.0.0.0/0'],
+          'allowed': [{
+              'IPProtocol': 'TCP',
+              'ports': [80]
+          }]
+      }
+  }]
+  return {'resources': resources}
