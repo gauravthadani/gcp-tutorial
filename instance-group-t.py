@@ -21,6 +21,13 @@ def GenerateConfig(context):
   resources = [{
       'name': context.env['name'],
       'type': 'compute.v1.instanceGroupManager',
-      'description': 'this is your autoscaling group'
+      'properties': {
+	      'zone': context.properties['zone'],
+	      'targetSize': context.properties['size'],
+	      'targetPools': ['$(ref.' + context.properties['target-pools'] + '.selfLink)'],
+          'baseInstanceName': context.env['name'] + '-instance',
+          'instanceTemplate': '$(ref.' + context.properties['instance-template'] + '.selfLink)'
+      
+      }
   }]
   return {'resources': resources}

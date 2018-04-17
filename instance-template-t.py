@@ -16,6 +16,7 @@
 
 COMPUTE_URL_BASE = 'https://www.googleapis.com/compute/v1/'
 
+
 def startup_script():
   return """
     sudo apt-get install -y nginx
@@ -35,6 +36,11 @@ def startup_script():
 
 def GenerateConfig(context):
   """Creates the instance group template with environment variable."""
+  
+  default_network = ''.join(['https://www.googleapis.com/compute/v1/projects/',
+                             context.env['project'],
+                             '/global/networks/default'])
+
   resources = [{
       'name': context.env['name'],
       'type': 'compute.v1.instanceTemplate',
@@ -53,6 +59,13 @@ def GenerateConfig(context):
                                           'images/family/debian-8'])
               }
           }],
+          'networkInterfaces': [{
+              'network': default_network,
+              'accessConfigs': [{
+                  'name': 'External NAT',
+                  'type': 'ONE_TO_ONE_NAT'
+              }]
+          }],
           'metadata': {
               'items': [{
                   'key': 'startup-script',
@@ -62,4 +75,8 @@ def GenerateConfig(context):
       }
     }
   }]
-  return {'resources': resources}
+
+  outputs = [{'name': 'instanceTemplateSelfLink',
+              'value': '$(ref.' + context.env['name'] + '.selfLink)'}]
+
+  return {'resources': resources, 'outputs': outputs}

@@ -18,7 +18,8 @@ imports:
 - path: firewall-t.py
 - path: deployment-t.py
 - path: instance-template-t.py
+- path: instance-group-t.py
 
 resources:
 - name: deployment-setup
-  type: deployment-t.py    
+  type: deployment-t.py

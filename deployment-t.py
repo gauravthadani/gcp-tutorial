@@ -18,30 +18,59 @@ NETWORK_NAME = 'a-new-network'
 PROJECT_NAME = 'dius-gcp-dev'
 DEFAULT_ZONE = 'us-central1-c'
 
-
 def GenerateConfig(unused_context):
   """Creates the Compute Engine with multiple templates."""
+  name='solution'
+  region='us-central1'
 
   resources = [{
-      'name': 'the-first-instance-template',
+      'name': name + '-it',
       'type': 'instance-template-t.py',
       'properties': {
           'project': PROJECT_NAME,
           'machineType': 'f1-micro',
+          'zone': DEFAULT_ZONE
+      }
+  }, {
+      'name': name + '-igm',
+      'type': 'instance-group-t.py',
+      'properties': {
           'zone': DEFAULT_ZONE,
-          'network': NETWORK_NAME
+          'size': 8,
+          'instance-template': name + '-it',
+          'target-pools': name + '-tp',
       }
   }, {
-      'name': NETWORK_NAME,
-      'type': 'network-t.py',
+      'name': name + '-as',
+      'type': 'compute.v1.autoscaler',
       'properties': {
-          'IPv4Range': '10.0.0.1/16'
+          'zone': DEFAULT_ZONE,
+          'target': '$(ref.' + name + '-igm.selfLink)',
+          'autoscalingPolicy': {
+              'maxNumReplicas': 8
+          }
       }
   }, {
-      'name': NETWORK_NAME + '-firewall',
-      'type': 'firewall-t.py',
+      'name': name + '-hc',
+      'type': 'compute.v1.httpHealthCheck',
       'properties': {
-          'network': NETWORK_NAME
+          'port': 80,
+          'requestPath': '/'
       }
+  }, {
+      'name': name + '-tp',
+      'type': 'compute.v1.targetPool',
+      'properties': {
+          'region': region,
+          'healthChecks': ['$(ref.' + name + '-hc.selfLink)']
+      }
+  }, {
+      'name': name + '-lb',
+      'type': 'compute.v1.forwardingRule',
+      'properties': {
+          'region': region,
+          'portRange': 80,
+          'target': '$(ref.' + name + '-tp.selfLink)'
+     } 
   }]
   return {'resources': resources}
